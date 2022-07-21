@@ -1,22 +1,43 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using System;
 
 
 public class SnakeController : MonoBehaviour
 {
-    private Vector2 direction = Vector2.right;
+    public static event Action onEat;
+    public static event Action<List<Transform>> afterEat;
+    public static event Action<List<Transform>> onStart;
+    public static event Action<bool> onDeath;
+    private Vector2 direction;
     public List<Transform> body;
-    private int score;
-    public Transform bodyPrefab;
-    public Text showText;
-    private void Start(){
+    public GameObject bodyPrefab;
+
+    public void Start(){
         body = new List<Transform>();
         body.Add(this.transform);
+        direction = Vector2.zero;
+        onStart?.Invoke(body);
     }
     
     private void Update()
     {
+        // switch (Input.inputString.ToLower())
+        // {
+        //     case "w":
+        //         direction = Vector2.up;
+        //         break;
+        //     case "s":
+        //         direction = Vector2.down;
+        //         break;
+        //     case "a":
+        //         direction = Vector2.left;
+        //         break;
+        //     case "d":
+        //         direction = Vector2.right;
+        //         break;
+        // }
+     
         if(Input.GetKeyDown(KeyCode.W) && (direction!=Vector2.down)){
             direction = Vector2.up;
         }
@@ -44,42 +65,39 @@ public class SnakeController : MonoBehaviour
     }
 
     private void Grow(){
-        Transform segment = Instantiate(bodyPrefab);
-        segment.position = this.transform.position;
-
-        body.Add(segment);
-         
+        GameObject segment = Instantiate(bodyPrefab);
+        segment.transform.position = this.transform.position;
+        body.Add(segment.transform);
     }
     
-    public void ResetGame(){
+    private void ResetGrow(){
         for (int i = 1; i < body.Count; i++){
             Destroy(body[i].gameObject);
         }
-
         body.Clear();
         body.Add(this.transform);
-
+        direction = Vector2.zero;
         this.transform.position = Vector3.zero;
-        score = 0;
-        showText.text = "Score: " + score.ToString();
-        
     }
 
-    private void increaseScore(){
-        score += 1;
-        showText.text = "Score: " + score.ToString();
+    private void Eat(GameObject target){
+        Grow();
+        Destroy(target);
+        afterEat?.Invoke(body);
+        onEat?.Invoke();
+    }
+
+    public void Death(){
+        ResetGrow();
+        onDeath?.Invoke(true);   
     }
 
     private void OnTriggerEnter2D(Collider2D other){
-        if (other.name == "Food"){
-            Grow();
-            increaseScore();
+        if (other.tag == "Food"){
+            Eat(other.gameObject);
         }
-        else if(other.tag == "Player"){
-            ResetGame();
-        }
-        else if(other.tag == "Wall"){
-            ResetGame();
+        else if(other.tag == "Player"||other.tag == "Wall"){
+            Death();
         }
     }
 }
