@@ -14,11 +14,11 @@ public class GameManager : MonoBehaviour
     private List<Transform> baseBody;
     
     private void OnEnable(){
-        SnakeController.onStart += spawn;
+        SnakeController.onStart += spawnFood;
         SnakeController.onStart += initalBody;
         SnakeController.onDeath += resetGame;
         SnakeController.onEat += increaseScore;
-        SnakeController.afterEat += spawn;
+        SnakeController.afterEat += spawnFood;
         PauseMenu.onReset += resetGame;
     }
 
@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
         displayCurrentScore.text = "Score: " + score.ToString();
     }
 
-    private void spawn(List<Transform> snakeBody){
+    private void spawnFood(List<Transform> snakeBody){
         bool isSpawn = true;
         float x = Random.Range(bounds.min.x, bounds.max.x);
         float y = Random.Range(bounds.min.y, bounds.max.y);
@@ -45,13 +45,13 @@ public class GameManager : MonoBehaviour
 
         for (int i = snakeBody.Count - 1; i > 0; i--){
             if ((Mathf.Round(snakeBody[i].position.x) == newPos.x) && (Mathf.Round(snakeBody[i].position.y) == newPos.y)){
-                spawn(snakeBody);
+                spawnFood(snakeBody);
                 isSpawn = false;
             }
         }
         if (isSpawn == true){
-            GameObject spawnFood = Instantiate(foodPrefab);
-            spawnFood.transform.position = new Vector3(Mathf.Round(x), Mathf.Round(y), 0.0f);
+            GameObject spawnedFood = Instantiate(foodPrefab);
+            spawnedFood.transform.position = new Vector3(Mathf.Round(x), Mathf.Round(y), 0.0f);
         }   
     }
 
@@ -71,16 +71,16 @@ public class GameManager : MonoBehaviour
         score = 0;
         displayCurrentScore.text = "Score: " + score.ToString();
         clearFood();
-        spawn(baseBody);
+        spawnFood(baseBody);
         
     }
 
     private void OnDisable(){
-        SnakeController.onStart -= spawn;
+        SnakeController.onStart -= spawnFood;
         SnakeController.onStart -= initalBody;
         SnakeController.onDeath -= resetGame;
         SnakeController.onEat -= increaseScore;
-        SnakeController.afterEat -= spawn;
+        SnakeController.afterEat -= spawnFood;
         PauseMenu.onReset -= resetGame;
     }
 }
