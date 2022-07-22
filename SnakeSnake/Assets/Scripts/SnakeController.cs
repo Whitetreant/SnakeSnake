@@ -5,38 +5,28 @@ using System;
 
 public class SnakeController : MonoBehaviour
 {
+    //set subject for observer
     public static event Action onEat;
     public static event Action<List<Transform>> afterEat;
     public static event Action<List<Transform>> onStart;
     public static event Action<bool> onDeath;
+    //declare snake direction
     private Vector2 direction;
+    //save snakebody position
     public List<Transform> body;
+    //set body prefab to Instantiate when snake eat food
     public GameObject bodyPrefab;
 
+    //set initial value, invoke onstart subject
     public void Start(){
         body = new List<Transform>();
         body.Add(this.transform);
         direction = Vector2.zero;
         onStart?.Invoke(body);
     }
-    
+    //control snake from KeyCode WSAD
     private void Update()
     {
-        // switch (Input.inputString.ToLower())
-        // {
-        //     case "w":
-        //         direction = Vector2.up;
-        //         break;
-        //     case "s":
-        //         direction = Vector2.down;
-        //         break;
-        //     case "a":
-        //         direction = Vector2.left;
-        //         break;
-        //     case "d":
-        //         direction = Vector2.right;
-        //         break;
-        // }
      
         if(Input.GetKeyDown(KeyCode.W) && (direction!=Vector2.down)){
             direction = Vector2.up;
@@ -51,7 +41,7 @@ public class SnakeController : MonoBehaviour
             direction = Vector2.right;
         }
     }
-    
+    //Snake move relate to timestep and head position
     private void FixedUpdate()
     {
         for (int i = body.Count - 1; i > 0; i--){
@@ -63,13 +53,13 @@ public class SnakeController : MonoBehaviour
             0.0f
         );
     }
-
+    //Instantiate new snake body when snake eat food
     private void Grow(){
         GameObject segment = Instantiate(bodyPrefab);
         segment.transform.position = this.transform.position;
         body.Add(segment.transform);
     }
-    
+    //Clear snake body when death or reset game, reset snake position and direction
     private void ResetGrow(){
         for (int i = 1; i < body.Count; i++){
             Destroy(body[i].gameObject);
@@ -79,7 +69,7 @@ public class SnakeController : MonoBehaviour
         direction = Vector2.zero;
         this.transform.position = Vector3.zero;
     }
-
+    //merge function/invoke to new function for easy to use
     private void Eat(GameObject target){
         Grow();
         Destroy(target);
@@ -91,7 +81,7 @@ public class SnakeController : MonoBehaviour
         ResetGrow();
         onDeath?.Invoke(true);   
     }
-
+    //check if snake is collide with food,obstacle or wall and call a function
     private void OnTriggerEnter2D(Collider2D other){
         if (other.tag == "Food"){
             Eat(other.gameObject);

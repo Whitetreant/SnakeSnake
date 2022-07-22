@@ -4,15 +4,23 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    //set Text components for show current score
     public Text displayCurrentScore;
-    public int score;
+    //save current score
+    public int currentScore;
+    //set spawn area for food
     public BoxCollider2D gridArea;
     private Bounds bounds;
+    //set food prefab for Instantiate new food when snake eat food
     public GameObject foodPrefab;
+    //set gameover popup when snake deaded
     public GameObject gameOverPopup;
+    //set Text components for show final score
     public Text displayFinalScore;
+    //save snake Head to List
     private List<Transform> baseBody;
     
+    //set observer
     private void OnEnable(){
         SnakeController.onStart += spawnFood;
         SnakeController.onStart += initalBody;
@@ -22,21 +30,22 @@ public class GameManager : MonoBehaviour
         PauseMenu.onReset += resetGame;
     }
 
+    //set default timestep(difficult), get max min area, assign score value
     private void Start(){
         Time.fixedDeltaTime = 0.06f;
         bounds = gridArea.bounds;
-        score = 0;
+        currentScore = 0;
     }
-    
+    //save snake head for parse to spawnFood when reset game
     private void initalBody(List<Transform> startBody){
         baseBody = startBody;
     }
-
+    //increase current score and show current score
     private void increaseScore(){
-        score += 1;
-        displayCurrentScore.text = "Score: " + score.ToString();
+        currentScore += 1;
+        displayCurrentScore.text = "Score: " + currentScore.ToString();
     }
-
+    //spawn food which food will not overlap with snake
     private void spawnFood(List<Transform> snakeBody){
         bool isSpawn = true;
         float x = Random.Range(bounds.min.x, bounds.max.x);
@@ -54,7 +63,7 @@ public class GameManager : MonoBehaviour
             spawnedFood.transform.position = new Vector3(Mathf.Round(x), Mathf.Round(y), 0.0f);
         }   
     }
-
+    //clear all food GameObject in screen when reset
     private void clearFood(){
         GameObject[] food;
         food = GameObject.FindGameObjectsWithTag("Food");
@@ -62,19 +71,19 @@ public class GameManager : MonoBehaviour
             Destroy(foodItem);
         }
     }
-
+    //show Gameover popup and score when snake deaded, reset current score, clear&spawn new food
     private void resetGame(bool isGameOver){
         if (isGameOver){
             gameOverPopup.SetActive(true);
-            displayFinalScore.text = "Score: " + score.ToString();
+            displayFinalScore.text = "Score: " + currentScore.ToString();
         }
-        score = 0;
-        displayCurrentScore.text = "Score: " + score.ToString();
+        currentScore = 0;
+        displayCurrentScore.text = "Score: " + currentScore.ToString();
         clearFood();
         spawnFood(baseBody);
         
     }
-
+    //disable observer
     private void OnDisable(){
         SnakeController.onStart -= spawnFood;
         SnakeController.onStart -= initalBody;
